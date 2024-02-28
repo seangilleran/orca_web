@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 def load_cached_search(query_str, batch_path):
     """TODO: Description."""
     import json
-    from megadoc import build_md
 
     log.info('Looking for cached searches...')
     batch_path = Path(batch_path)
