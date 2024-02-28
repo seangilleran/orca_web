@@ -56,14 +56,14 @@ def search(query_str, batch_path):
     search_ts = datetime.now().isoformat()
     search_name = f"{'-'.join(slugify(search_ts).split('-')[:-1]).replace('t', '_')}_{slugify(query_str)}"
     search_file = batch_path / 'cache' / 'searches' / f"{search_name}.json"
-    md_file = batch_path / 'cache' / 'megadocs' / f"{search_name}.txt"
+    txt_file = batch_path / 'cache' / 'megadocs' / f"{search_name}.txt"
     docx_file = batch_path / 'cache' / 'megadocs' / f"{search_name}.docx"
     search_info = {
         'uuid': f"{uuid4()}",
         'query_str': query_str,
         'timestamp': search_ts,
         'path': f"{search_file}",
-        'md_path': f"{md_file}",
+        'txt_path': f"{txt_file}",
         'docx_path': f"{docx_file}",
     }
 

@@ -31,7 +31,11 @@ def build_md(images, out_file):
 
     album_sizes = {}
     for i, img in enumerate(sorted(images, key=lambda d: d['timestamp'])):
-        log.debug('[%d/%d] %s' % (i + 1, len(images), out_file))
+        count_str = '[%d/%d] %s' % (i + 1, len(images), out_file)
+        if i == 0 or i - 1 % 250 == 0 or i == len(images) - 1:
+            log.info(count_str)
+        else:
+            log.debug(count_str)
 
         # Find the text file and load its contents.
         txt_file = Path(img['txt_path'])
@@ -123,3 +127,39 @@ def build_md(images, out_file):
 
     # Remove .INCOMPLETE suffix.
     out_file_ic.rename(out_file)
+
+
+def build_from_search(query_str, batch_path):
+    """TODO: Description."""
+    from search import search
+
+    # Get search results and metadata.
+    results, search_info = search(query_str, batch_path)
+
+    # Create Markdown megadoc.
+    txt_file = Path(search_info.get('txt_path', ''))
+    if not txt_file.exists() or not txt_file.is_file():
+        build_md(results, txt_file)
+    
+    # Create DOCX megadoc.
+    docx_file = Path(search_info.get('docx_path', ''))
+    if not docx_file.exists() or not docx_file.is_file():
+        build_md(results, docx_file)
+
+
+if __name__ == '__main__':
+    import argparse
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+    )
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('query')
+    parser.add_argument('-b', '--batch_path', required=True)
+    args = parser.parse_args()
+
+    results = build_from_search(args.query, args.batch_path)
+    log.info('Done!')
+
