@@ -73,8 +73,9 @@ def search(query_str, batch_path):
         search_index_file.parent.mkdir(parents=True, exist_ok=True)
         with search_index_file.open('w') as f:
             json.dump(search_cache, f)
-    with search_index_file.open() as f:
-        search_cache = json.load(f)
+    else:
+        with search_index_file.open() as f:
+            search_cache = json.load(f)
 
     is_new_search = True
     for search in search_cache:
@@ -100,7 +101,6 @@ def search(query_str, batch_path):
     else:
         with search_file.open() as f:
             results = json.load(f)
-
     return results, search_info
 
 
