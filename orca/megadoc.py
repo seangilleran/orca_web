@@ -80,6 +80,7 @@ def build_md(images, out_file):
             rPr.append(color)
             underline = OxmlElement('w:u')
             underline.set(qn('w:val'), 'single')
+            rPr.append(underline)
             bold = OxmlElement('w:b')
             rPr.append(bold)
             run.append(rPr)
