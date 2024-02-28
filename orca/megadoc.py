@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 
 log = logging.getLogger(__name__)
-album_sizes = {}
 
 
 def build_md(images, out_file):
@@ -27,6 +26,7 @@ def build_md(images, out_file):
         % (out_file_type, len(images), out_file)
     )
 
+    album_sizes = {}
     for i, img in enumerate(sorted(images, key=lambda d: d['timestamp'])):
         log.debug('[%d/%d] %s' % (i + 1, len(images), out_file))
 
