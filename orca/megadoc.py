@@ -27,6 +27,8 @@ def build_md(images, out_file):
         % (out_file_type, len(images), out_file)
     )
 
+    out_file_ic = out_file.with_stem(f"INCOMPLETE_{out_file.stem}")
+
     album_sizes = {}
     for i, img in enumerate(sorted(images, key=lambda d: d['timestamp'])):
         log.debug('[%d/%d] %s' % (i + 1, len(images), out_file))
@@ -53,7 +55,7 @@ def build_md(images, out_file):
 
         # Write to Word document--
         if out_file_type == '.docx':
-            doc = Document(out_file.as_posix()) if out_file.exists() else Document()
+            doc = Document(out_file_ic) if out_file_ic.exists() else Document()
 
             doc.add_heading(img['timestamp_str'], level=1)
 
@@ -100,11 +102,11 @@ def build_md(images, out_file):
             if i < len(images) - 1:
                 doc.add_page_break()
 
-            doc.save(out_file.as_posix())
+            doc.save(out_file_ic)
 
         # Write to Markdown--
         else:
-            with out_file.open('a') as f:
+            with out_file_ic.open('a') as f:
                 f.writelines(
                     [
                         '---\n',
@@ -118,3 +120,6 @@ def build_md(images, out_file):
                 )
                 if i < len(images) - 1:
                     f.write('\n\n\n')
+
+    # Remove .INCOMPLETE suffix.
+    out_file_ic.rename(out_file)
