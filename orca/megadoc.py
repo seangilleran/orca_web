@@ -16,6 +16,7 @@ def build_md(images, out_file):
     # TODO: There's probably a safer way to handle this.
     import os
     from dotenv import load_dotenv
+
     load_dotenv()
 
     out_file = Path(out_file)
@@ -64,7 +65,7 @@ def build_md(images, out_file):
             # To add a link we need to manipulate the underlying XML directly.
             run = OxmlElement('w:r')
 
-            link = OxmlElement('w:hyperlink')       # Create link
+            link = OxmlElement('w:hyperlink')  # Create link
             link.set(
                 qn('r:id'),
                 doc.part.relate_to(
@@ -74,7 +75,7 @@ def build_md(images, out_file):
                 ),
             )
 
-            rPr = OxmlElement('w:rPr')              # Format
+            rPr = OxmlElement('w:rPr')  # Format
             color = OxmlElement('w:color')
             color.set(qn('w:val'), '0000FF')
             rPr.append(color)
@@ -85,28 +86,35 @@ def build_md(images, out_file):
             rPr.append(bold)
             run.append(rPr)
 
-            text_tag = OxmlElement('w:t')           # Set text
+            text_tag = OxmlElement('w:t')  # Set text
             text_tag.text = url
             run.append(text_tag)
 
-            link.append(run)                        # Add to paragraph
+            link.append(run)  # Add to paragraph
             p._p.append(link)
             # #####
-            
+
             doc.add_paragraph('-----')
             doc.add_paragraph(content)
-    
+
             if i < len(images) - 1:
                 doc.add_page_break()
-    
+
             doc.save(out_file.as_posix())
 
         # Write to Markdown--
         else:
             with out_file.open('a') as f:
-                f.write(f"# {img['timestamp_str']}\n")
-                f.write(f"## {album_index}\n\n")
-                f.write(f"**{url}**\n\n")
-                f.write(f"{content}\n\n")
+                f.writelines(
+                    [
+                        '---\n',
+                        f"date:  {img['timestamp_str']}\n",
+                        f"album: {album_index}\n",
+                        f"image: {url}\n",
+                        '---\n',
+                        '\n',
+                        f"{content}\n",
+                    ]
+                )
                 if i < len(images) - 1:
-                    f.write('---\n\n\n')
+                    f.write('\n\n\n')
