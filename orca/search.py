@@ -41,12 +41,6 @@ def load_cached_search(query_str, batch_path):
     with search_file.open() as f:
         results = json.load(f)
 
-    # Rebuild the megadoc if necessary.
-    if not Path(search_info['md_path']).exists():
-        build_md(results, search_info['md_path'])
-    if not Path(search_info['docx_path']).exists():
-        build_md(results, search_info['docx_path'])
-
     return results, search_info
 
 
@@ -58,7 +52,6 @@ def search(query_str, batch_path):
     from slugify import slugify
     from whoosh.index import open_dir
     from whoosh.qparser import QueryParser, FuzzyTermPlugin
-    from megadoc import build_md
 
     # Load cache.
     batch_path = Path(batch_path)
@@ -113,7 +106,7 @@ def search(query_str, batch_path):
     md_path = batch_path / 'cache' / 'megadocs'
     md_path.mkdir(parents=True, exist_ok=True)
     md_file = md_path / f"{slugify(f'{search_name} {query_str}')}.txt"
-    build_md(results, md_file)
+    docx_file = md_file.with_suffix('.docx')
 
     # Save these results to our index of cached searches.
     search_info = {
@@ -122,6 +115,7 @@ def search(query_str, batch_path):
         'timestamp': search_ts,
         'path': f"{search_file}",
         'md_path': f"{md_file}",
+        'docx_path': f"{docx_file}",
     }
     search_cache.append(search_info)
     with search_index_file.open('w') as f:
