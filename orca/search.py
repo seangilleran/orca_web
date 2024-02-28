@@ -22,6 +22,7 @@ def whoosh_query(query_str, batch_path):
     whoosh_index = open_dir(whoosh_index_path.as_posix())
 
     # Parse query and store results.
+    results = []
     start = time()
     with whoosh_index.searcher() as searcher:
         parser = QueryParser('content', whoosh_index.schema)
@@ -36,7 +37,7 @@ def whoosh_query(query_str, batch_path):
 
     log.info(
         'Found %d results for "%s" in %d documents. Search took %.2f seconds.'
-        % (len(results), query_str, len(index['images'], time() - start))
+        % (len(results), query_str, len(index['images']), time() - start)
     )
     return results
 
@@ -53,7 +54,7 @@ def search(query_str, batch_path):
 
     # Create new search metadata; overwrite later if the search is cached.
     search_ts = datetime.now().isoformat()
-    search_name = f"{slugify('-'.join(search_ts.split('-')[:-1])).replace('t', '_')}_{slugify(query_str)}"
+    search_name = f"{'-'.join(slugify(search_ts).split('-')[:-1]).replace('t', '_')}_{slugify(query_str)}"
     search_file = batch_path / 'cache' / 'searches' / f"{search_name}.json"
     md_file = batch_path / 'cache' / 'megadocs' / f"{search_name}.txt"
     docx_file = batch_path / 'cache' / 'megadocs' / f"{search_name}.docx"
@@ -67,18 +68,17 @@ def search(query_str, batch_path):
     }
 
     # Check the cache--have we done this search before?
-    search_cache = []
+    search_index = []
     search_index_file = batch_path / 'cache' / 'searches' / 'search_index.json'
-    if not search_index_file.exists():
-        search_index_file.parent.mkdir(parents=True, exist_ok=True)
-        with search_index_file.open('w') as f:
-            json.dump(search_cache, f)
-    else:
+    if search_index_file.exists():
         with search_index_file.open() as f:
-            search_cache = json.load(f)
+            search_index = json.load(f)
+    else:
+        search_index_file.parent.mkdir(parents=True, exist_ok=True)
+        search_index_file.write_text('[]\n')
 
     is_new_search = True
-    for search in search_cache:
+    for search in search_index:
         if query_str == search['query_str']:
             log.info('Found cached search: %s' % search['path'])
             search_info.update(search)
@@ -87,9 +87,9 @@ def search(query_str, batch_path):
 
     # Save the cache here now that we have our entry lined up.
     if is_new_search:
-        search_cache.append(search_info)
+        search_index.append(search_info)
         with search_index_file.open('w') as f:
-            json.dump(f)
+            json.dump(search_index, f)
 
     # Perform the search if we haven't already.
     results = []
