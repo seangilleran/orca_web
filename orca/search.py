@@ -33,7 +33,7 @@ def load_cached_search(query_str, batch_path):
         log.debug('No cached search found for "%s".' % query_str)
         return None
     if not search_file.exists():
-        log.warning('File not found: %s' % search_file)
+        log.debug('File not found: %s' % search_file)
         return None
 
     log.info('Found cached search for "%s": %s' % (query_str, search_file))
@@ -64,6 +64,32 @@ def search(query_str, batch_path):
     with search_index_file.open() as f:
         search_cache = json.load(f)
 
+    # Create an entry in the search cache.
+    search_name = f"{slugify('-'.join(search_ts.split('-')[:-1])).replace('t', '_')}_{slugify(query_str)}"
+    search_file = cache_path / 'searches' / f"{search_name}.json"
+    log.info('Saving cached search: %s' % search_file)
+    with search_file.open('w') as f:
+        json.dump(results, f)
+
+    # Create megadoc paths.
+    md_path = batch_path / 'cache' / 'megadocs'
+    md_path.mkdir(parents=True, exist_ok=True)
+    md_file = md_path / f"{slugify(f'{search_name} {query_str}')}.txt"
+    docx_file = md_file.with_suffix('.docx')
+
+    # Save these results to our index of cached searches.
+    search_info = {
+        'uuid': f"{uuid4()}",
+        'query_str': query_str,
+        'timestamp': search_ts,
+        'path': f"{search_file}",
+        'md_path': f"{md_file}",
+        'docx_path': f"{docx_file}",
+    }
+    search_cache.append(search_info)
+    with search_index_file.open('w') as f:
+        json.dump(search_cache, f)
+
     # Load indeces.
     index_file = cache_path / 'index.json'
     with index_file.open() as f:
@@ -93,32 +119,6 @@ def search(query_str, batch_path):
         'Found %d results for "%s" in %d documents.'
         % (len(results), query_str, len(index['images']))
     )
-
-    # Save cached results.
-    search_name = f"{slugify('-'.join(search_ts.split('-')[:-1])).replace('t', '_')}_{slugify(query_str)}"
-    search_file = cache_path / 'searches' / f"{search_name}.json"
-    log.info('Saving cached search: %s' % search_file)
-    with search_file.open('w') as f:
-        json.dump(results, f)
-
-    # Create markdown file containing search results ("megadoc").
-    md_path = batch_path / 'cache' / 'megadocs'
-    md_path.mkdir(parents=True, exist_ok=True)
-    md_file = md_path / f"{slugify(f'{search_name} {query_str}')}.txt"
-    docx_file = md_file.with_suffix('.docx')
-
-    # Save these results to our index of cached searches.
-    search_info = {
-        'uuid': f"{uuid4()}",
-        'query_str': query_str,
-        'timestamp': search_ts,
-        'path': f"{search_file}",
-        'md_path': f"{md_file}",
-        'docx_path': f"{docx_file}",
-    }
-    search_cache.append(search_info)
-    with search_index_file.open('w') as f:
-        json.dump(search_cache, f)
 
     # Return tuple containing both results and metadata.
     return results, search_info
