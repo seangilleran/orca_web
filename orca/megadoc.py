@@ -28,7 +28,7 @@ def build_md(images, out_file):
     )
 
     for i, img in enumerate(sorted(images, key=lambda d: d['timestamp'])):
-        log.info('[%d/%d] %s' % (i + 1, len(images), out_file))
+        log.debug('[%d/%d] %s' % (i + 1, len(images), out_file))
 
         # Find the text file and load its contents.
         txt_file = Path(img['txt_path'])
