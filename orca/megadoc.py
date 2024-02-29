@@ -131,7 +131,7 @@ def build_md(images, out_file):
 
 def build_from_search(query_str, batch_path):
     """TODO: Description."""
-    from search import search
+    from orca.search import search
 
     # Get search results and metadata.
     results, search_info = search(query_str, batch_path)
