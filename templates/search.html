@@ -36,7 +36,7 @@
             {%- for doc in search['megadocs'] %}
             <li>
               {%- if not doc['complete'] %}
-              {{ doc['filetype'] | upper }}: {{ '%.2f'|format(doc['page_count'] / search['results']['count'] * 100.0|float) }}% complete (working...)
+              {{ doc['filetype'] | upper }}: {{ '%.1f'|format(doc['page_count'] / search['results']['count'] * 100.0|float) }}% complete (working...)
               {%- else %}
               📄 <a href="{{ doc['path'] }}">Download .{{ doc['filetype'] | upper }}</a>
               {%- endif %}
