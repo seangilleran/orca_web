@@ -15,10 +15,11 @@
     <button type="submit">Search</button>
   </form>
   <a href="https://whoosh.readthedocs.io/en/latest/querylang.html#overview" target="_blank">How to&hellip;</a>
-  <br style="margin-bottom: 1rem;"><hr>
+  <br style="margin-bottom: 1rem;">
+  <hr>
   <ul id="searchCache">
-  {%- for search in searches | reverse %}
-    <li{% if not loop.last %} style="margin-bottom: 1rem;"{% endif %}>
+    {%- for search in searches | reverse %}
+    <li{% if not loop.last %} style="margin-bottom: 1rem;" {% endif %}>
       <strong style="background-color: yellow;padding: 1px;">{{ search['query_str'] }}</strong>
       &mdash; {{ search['results']['count'] }} results
       {%- if not search['results']['complete'] %}
@@ -33,22 +34,24 @@
         {%- for doc in search['megadocs'] %}
         <li>
           {%- if not doc['complete'] %}
-          {{ doc['filetype'] | upper }}: {{ '%.1f'|format(doc['pages'] / search['results']['count'] * 100.0|float) }}% complete (working...)
+          {{ doc['filetype'] | upper }}: {{ '%.1f'|format(doc['pages'] / search['results']['count'] * 100.0|float) }}%
+          complete (working...)
           {%- else %}
           📄 <a href="{{ doc['path'] }}">Download .{{ doc['filetype'] | upper }}</a> ({{ doc['size'] | filesize }})
           {%- endif %}
         </li>
         {%- endfor %}
       </ul>
-    </li>
-  {%- endfor %}
+      </li>
+      {%- endfor %}
   </ul>
   <label for="query">Auto-refresh:</label>
   <input type="checkbox" id="autorefresh" checked>
   <hr>
   <footer>
     <p>
-      <a href="https://github.com/seangilleran/orca_web" target="_blank">https://github.com/seangilleran/orca_web</a><br>
+      <a href="https://github.com/seangilleran/orca_web"
+        target="_blank">https://github.com/seangilleran/orca_web</a><br>
       Last updated March 2024
     </p>
   </footer>
@@ -66,7 +69,7 @@
       if ($('#autorefresh').is(':checked')) {
         $('#searchCache').children().each(function () {
           if ($(this).text().indexOf('working...') !== -1) {
-            setTimeout(function() {
+            setTimeout(function () {
               location.reload();
             }, 2000);
             return false;
@@ -75,6 +78,7 @@
       }
     });
   </script>
+
 </body>
 
 </html>
