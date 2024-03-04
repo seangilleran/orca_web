@@ -17,7 +17,7 @@ from flask import (
 
 load_dotenv()
 app = Flask(__name__)
-app.secret_key = f"{uuid4()}"
+app.secret_key = os.getenv('ORCA_FLASK_SECRET', f"{uuid4()}")
 celery = Celery(
     __name__,
     broker=os.getenv('ORCA_BROKER_URL', 'redis://localhost:6379/0'),
@@ -43,7 +43,7 @@ def do_search(self, query_str):
 def iso_datetime(value, format='%B %-d, %Y at %-I:%M %p'):
     """TODO: Description."""
     from datetime import datetime
-    
+
     if not value or value is None:
         return ''
     else:
