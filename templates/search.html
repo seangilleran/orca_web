@@ -27,7 +27,7 @@
           {%- endif %}
         </li>
         <li>
-          Started {{ search['timestamp'] | iso_datetime }}
+          {% if not search['results']['complete'] %}Started {% endif %}{{ search['timestamp'] | iso_datetime }}
         </li>
         {%- if search['megadocs'] %}
         <li>
@@ -36,9 +36,9 @@
             {%- for doc in search['megadocs'] %}
             <li>
               {%- if not doc['complete'] %}
-              {{ doc['filetype'] | upper }}: {{ '%.1f'|format(doc['page_count'] / search['results']['count'] * 100.0|float) }}% complete (working...)
+              {{ doc['filetype'] | upper }}: {{ '%.1f'|format(doc['pages'] / search['results']['count'] * 100.0|float) }}% complete (working...)
               {%- else %}
-              📄 <a href="{{ doc['path'] }}">Download .{{ doc['filetype'] | upper }}</a>
+              📄 <a href="{{ doc['path'] }}">Download .{{ doc['filetype'] | upper }}</a> ({{ doc['size'] | filesize }})
               {%- endif %}
             </li>
             {%- endfor %}
@@ -52,8 +52,8 @@
   <hr>
   <footer>
     <p>
-      ORCA Document Search v0.2a<br>
-      March 2024
+      <a href="https://github.com/seangilleran/orca_web">https://github.com/seangilleran/orca_web</a><br>
+      Last updated March 2024
     </p>
   </footer>
 

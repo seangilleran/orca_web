@@ -134,6 +134,7 @@ def build_md(images, out_file):
 def build_from_search(query_str, batch_path, filetypes=['txt', 'docx']):
     """TODO: Description."""
     import json
+    import os
     from orca.search import load_search_cache
 
     search_index, search_index_file = load_search_cache(batch_path)
@@ -166,19 +167,21 @@ def build_from_search(query_str, batch_path, filetypes=['txt', 'docx']):
         megadoc_info = {
             'filetype': filetype,
             'path': f"{doc_file}",
-            'page_count': 0,
+            'pages': 0,
+            'size': 0,
             'complete': False,
         }
         search_info['megadocs'].append(megadoc_info)
         
         for i in build_md(results, doc_file):
-            megadoc_info['page_count'] = i
+            megadoc_info['pages'] = i
             with search_index_file.open('w') as f:
                 json.dump(search_index, f)
         
         megadoc_info['complete'] = True
+        megadoc_info['size'] = os.path.getsize(doc_file)
         with search_index_file.open('w') as f:
-                json.dump(search_index, f, indent=4)
+                json.dump(search_index, f)
 
 
 if __name__ == '__main__':

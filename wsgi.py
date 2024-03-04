@@ -48,6 +48,19 @@ def iso_datetime(value, format='%B %-d, %Y at %-I:%M %p'):
         return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f').strftime(format)
 
 
+@app.template_filter('filesize')
+def filesize(value):
+    """
+    TODO: Description.
+    https://web.archive.org/web/20111010015624/http://blogmag.net/blog/read/38/Print_human_readable_file_size
+    """
+    for unit in ('', 'K', 'M', 'G'):
+        if abs(value) < 1024.0:
+            return f"{value:3.1f} {unit}B"
+        value /= 1024.0
+    return f"{value:.1f} TB"
+
+
 @app.route('/orca/search', methods=['GET', 'POST'])
 def search():
     """TODO: Description."""
