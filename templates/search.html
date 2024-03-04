@@ -18,37 +18,32 @@
   <ul id="searchCache">
   {%- for search in searches | reverse %}
     <li{% if not loop.last %} style="margin-bottom: 1rem;"{% endif %}>
-      <strong style="font-family:monospace; background-color: yellow;padding: 1px;">{{ search['query_str'] }}</strong>
+      <strong style="background-color: yellow;padding: 1px;">{{ search['query_str'] }}</strong>
+      &mdash; {{ search['results']['count'] }} results
+      {%- if not search['results']['complete'] %}
+      so far (working...)
+      {%- endif %}
       <ul>
+        {%- if not search['results']['complete'] %}
         <li>
-          {{ search['results']['count'] }} results
-          {%- if not search['results']['complete'] %}
-          so far (working...)
-          {%- endif %}
-        </li>
-        <li>
-          {% if not search['results']['complete'] %}Started {% endif %}{{ search['timestamp'] | iso_datetime }}
-        </li>
-        {%- if search['megadocs'] %}
-        <li>
-          Megadocs:
-          <ul>
-            {%- for doc in search['megadocs'] %}
-            <li>
-              {%- if not doc['complete'] %}
-              {{ doc['filetype'] | upper }}: {{ '%.1f'|format(doc['pages'] / search['results']['count'] * 100.0|float) }}% complete (working...)
-              {%- else %}
-              📄 <a href="{{ doc['path'] }}">Download .{{ doc['filetype'] | upper }}</a> ({{ doc['size'] | filesize }})
-              {%- endif %}
-            </li>
-            {%- endfor %}
-          </ul>
+          Started {{ search['timestamp'] | iso_datetime }}
         </li>
         {%- endif %}
+        {%- for doc in search['megadocs'] %}
+        <li>
+          {%- if not doc['complete'] %}
+          {{ doc['filetype'] | upper }}: {{ '%.1f'|format(doc['pages'] / search['results']['count'] * 100.0|float) }}% complete (working...)
+          {%- else %}
+          📄 <a href="{{ doc['path'] }}">Download .{{ doc['filetype'] | upper }}</a> ({{ doc['size'] | filesize }})
+          {%- endif %}
+        </li>
+        {%- endfor %}
       </ul>
     </li>
   {%- endfor %}
   </ul>
+  <label for="query">Auto-refresh:</label>
+  <input type="checkbox" id="autorefresh" checked>
   <hr>
   <footer>
     <p>
@@ -64,8 +59,19 @@
         $(this).find(':button').prop('disabled', true);
         setTimeout(() => {
           $(this).find(':button').prop('disabled', false);
-        }, 5000);
+        }, 2000);
       });
+
+      if ($('#autorefresh').is(':checked')) {
+        $('#searchCache').children().each(function () {
+          if ($(this).text().indexOf('working...') !== -1) {
+            setTimeout(function() {
+              location.reload();
+            }, 2000);
+            return false;
+          }
+        });
+      }
     });
   </script>
 </body>
