@@ -1,7 +1,6 @@
 """TODO: File description."""
 
 import os
-from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -43,6 +42,8 @@ def do_search(self, query_str):
 @app.template_filter('iso_datetime')
 def iso_datetime(value, format='%B %-d, %Y at %-I:%M %p'):
     """TODO: Description."""
+    from datetime import datetime
+    
     if not value or value is None:
         return ''
     else:
