@@ -14,7 +14,8 @@
     <input type="text" name="query" id="query">
     <button type="submit">Search</button>
   </form>
-  <br><hr>
+  <a href="https://whoosh.readthedocs.io/en/latest/querylang.html#overview" target="_blank">How to&hellip;</a>
+  <br style="margin-bottom: 1rem;"><hr>
   <ul id="searchCache">
   {%- for search in searches | reverse %}
     <li{% if not loop.last %} style="margin-bottom: 1rem;"{% endif %}>
@@ -47,7 +48,7 @@
   <hr>
   <footer>
     <p>
-      <a href="https://github.com/seangilleran/orca_web">https://github.com/seangilleran/orca_web</a><br>
+      <a href="https://github.com/seangilleran/orca_web" target="_blank">https://github.com/seangilleran/orca_web</a><br>
       Last updated March 2024
     </p>
   </footer>
