@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ORCA Search</title>
+</head>
+
+<body style="background-color: lightgray;margin-left: 1rem;margin-right: 1rem;">
+  <h1>ORCA Document Search</h1>
+  <form method="post">
+    <label for="query">Query:</label><br>
+    <input type="text" name="query" id="query">
+    <button type="submit">Search</button>
+  </form>
+  <br><hr>
+  <ul id="searchCache">
+  {%- for search in searches | reverse %}
+    <li{% if not loop.last %} style="margin-bottom: 1rem;"{% endif %}>
+      <strong style="font-family:monospace; background-color: yellow;padding: 1px;">{{ search['query_str'] }}</strong>
+      <ul>
+        <li>
+          {{ search['results']['count'] }} results
+          {%- if not search['results']['complete'] %}
+          so far (working...)
+          {%- endif %}
+        </li>
+        <li>
+          Started {{ search['timestamp'] | iso_datetime }}
+        </li>
+        {%- if search['megadocs'] %}
+        <li>
+          Megadocs:
+          <ul>
+            {%- for doc in search['megadocs'] %}
+            <li>
+              {%- if not doc['complete'] %}
+              {{ doc['filetype'] | upper }}: {{ '%.2f'|format(doc['page_count'] / search['results']['count'] * 100.0|float) }}% complete (working...)
+              {%- else %}
+              📄 <a href="{{ doc['path'] }}">Download .{{ doc['filetype'] | upper }}</a>
+              {%- endif %}
+            </li>
+            {%- endfor %}
+          </ul>
+        </li>
+        {%- endif %}
+      </ul>
+    </li>
+  {%- endfor %}
+  </ul>
+  <hr>
+  <footer>
+    <p>
+      ORCA Document Search v0.2a<br>
+      March 2024
+    </p>
+  </footer>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('form').submit(function () {
+        $(this).find(':button').prop('disabled', true);
+        setTimeout(() => {
+          $(this).find(':button').prop('disabled', false);
+        }, 5000);
+      });
+    });
+  </script>
+</body>
+
+</html>

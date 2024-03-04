@@ -32,7 +32,7 @@ def build_md(images, out_file):
     album_sizes = {}
     for i, img in enumerate(sorted(images, key=lambda d: d['timestamp'])):
         count_str = '[%d/%d] %s' % (i + 1, len(images), out_file)
-        if i == 0 or i - 1 % 250 == 0 or i == len(images) - 1:
+        if i == 0 or i % 99 == 0 or i == len(images) - 1:
             log.info(count_str)
         else:
             log.debug(count_str)
@@ -107,6 +107,7 @@ def build_md(images, out_file):
                 doc.add_page_break()
 
             doc.save(out_file_ic)
+            yield i + 1
 
         # Write to Markdown--
         else:
@@ -124,27 +125,60 @@ def build_md(images, out_file):
                 )
                 if i < len(images) - 1:
                     f.write('\n\n\n')
+            yield i + 1
 
     # Remove .INCOMPLETE suffix.
     out_file_ic.rename(out_file)
 
 
-def build_from_search(query_str, batch_path):
+def build_from_search(query_str, batch_path, filetypes=['txt', 'docx']):
     """TODO: Description."""
-    from orca.search import search
+    import json
+    from orca.search import load_search_cache
+
+    search_index, search_index_file = load_search_cache(batch_path)
 
     # Get search results and metadata.
-    results, search_info = search(query_str, batch_path)
+    search_info = next(s for s in search_index if s['query_str'] == query_str)
+    with Path(search_info['results']['json_path']).open() as f:
+        results = json.load(f)
 
-    # Create Markdown megadoc.
-    txt_file = Path(search_info.get('txt_path', ''))
-    if not txt_file.exists() or not txt_file.is_file():
-        build_md(results, txt_file)
-    
-    # Create DOCX megadoc.
-    docx_file = Path(search_info.get('docx_path', ''))
-    if not docx_file.exists() or not docx_file.is_file():
-        build_md(results, docx_file)
+    if not search_info.get('megadocs'):
+        search_info['megadocs'] = []
+    else:
+        # Remove completed filetypes from queue.
+        for doc in search_info['megadocs']:
+            if doc['complete'] and doc['filetype'] in filetypes:
+                filetypes = [f for f in filetypes if f != doc['filetype']]
+
+    if not filetypes or filetypes == []:
+        log.info('All megadocs complete or no filetypes specified.')
+        return
+
+    # Execute queue.
+    doc_path = Path(batch_path) / 'cache' / 'megadocs'
+    if not doc_path.exists():
+        doc_path.mkdir(exist_ok=True, parents=True)
+    stem = Path(search_info['results']['json_path']).stem
+
+    for filetype in filetypes:
+        doc_file = doc_path / f"{stem}.{filetype.lower()}"
+        megadoc_info = {
+            'filetype': filetype,
+            'path': f"{doc_file}",
+            'page_count': 0,
+            'complete': False,
+        }
+        search_info['megadocs'].append(megadoc_info)
+        
+        for i in build_md(results, doc_file):
+            megadoc_info['page_count'] = i
+            with search_index_file.open('w') as f:
+                json.dump(search_index, f)
+        
+        megadoc_info['complete'] = True
+        with search_index_file.open('w') as f:
+                json.dump(search_index, f, indent=4)
 
 
 if __name__ == '__main__':
