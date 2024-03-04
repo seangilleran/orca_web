@@ -5,7 +5,6 @@ from pathlib import Path
 from uuid import uuid4
 
 from celery import Celery
-from dotenv import load_dotenv
 from flask import (
     Flask,
     redirect,
@@ -15,7 +14,6 @@ from flask import (
 )
 
 
-load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('ORCA_FLASK_SECRET', f"{uuid4()}")
 celery = Celery(
