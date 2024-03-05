@@ -10,17 +10,18 @@
 <body style="background-color: lightgray;margin-left: 1rem;margin-right: 1rem;">
   <h1>ORCA Document Search</h1>
   <form method="post">
-    <label for="query">Query:</label><br>
+    <label for="query">Searching {{ "{:,}".format(total) }} documents:</label><br>
     <input type="text" name="query" id="query">
     <button type="submit">Search</button>
   </form>
-  <a href="https://whoosh.readthedocs.io/en/latest/querylang.html#overview" target="_blank">How to&hellip;</a>
+  <a href="https://whoosh.readthedocs.io/en/latest/querylang.html#overview" target="_blank">Help with Search</a><br>
+  <a href="/orca/data/img" target="_blank">Raw Images</a>
   <br style="margin-bottom: 1rem;">
   <hr>
   <ul id="searchCache">
     {%- for search in searches | reverse %}
     <li{% if not loop.last %} style="margin-bottom: 1rem;" {% endif %}>
-      <strong style="background-color: yellow;padding: 1px;">{{ search['query_str'] }}</strong>
+      <strong style="font-family: monospace;background-color: yellow;padding: 1px;">{{ search['query_str'] }}</strong>
       &mdash; {{ search['results']['count'] }} results
       {%- if not search['results']['complete'] %}
       so far (working...)

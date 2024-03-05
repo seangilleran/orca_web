@@ -1,5 +1,6 @@
 """TODO: File description."""
 
+import json
 import os
 from pathlib import Path
 from uuid import uuid4
@@ -23,6 +24,9 @@ celery = Celery(
 )
 celery.conf.update(app.config)
 batch_path = Path(os.getenv('ORCA_CURRENT_BATCH_PATH', 'data/00_initial'))
+
+with (batch_path / 'cache' / 'index.json').open() as f:
+    doc_count = len(json.load(f)['images'])
 
 
 @celery.task(bind=True)
@@ -74,4 +78,4 @@ def search():
         return redirect(url_for('search'))
 
     search_index, _ = load_search_cache(batch_path)
-    return render_template('search.html', searches=search_index)
+    return render_template('search.html', total=doc_count, searches=search_index)
