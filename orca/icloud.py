@@ -89,6 +89,7 @@ def download_album(
         timestamp = photo.created.strftime('%Y-%m-%d_%H-%M-%S')
         name = photo.filename
         img_file = dl_path / f"{index}_{timestamp}_{name}"
+
         count_str = '[%d/%d]: %s' % (i + 1, count, img_file)
         if i == 0 or i % 100 == 99 or i == count - 1:
             log.info(count_str)
