@@ -12,7 +12,7 @@
   <form method="post">
     <label for="query">Searching {{ "{:,}".format(total) }} documents:</label><br>
     <input type="text" name="query" id="query">
-    <button type="submit">Search</button>
+    <button type="submit" id="#submitBtn">Search</button>
   </form>
   <a href="https://whoosh.readthedocs.io/en/latest/querylang.html#overview" target="_blank">Help with Search</a><br>
   <a href="/orca/data/img" target="_blank">Raw Images</a>
@@ -22,6 +22,7 @@
     Updating search results...<br>
     (Requires JavaScript)
   </ul>
+  👆 <a href="#">Return to top</a>
   <hr>
   <footer>
     <p>
@@ -110,14 +111,18 @@
     $(document).ready(function () {
       // Fetch results at least once to populate the list.
       fetchResults()
+      $('form').find('button').text('Working...').prop('disabled', true);
+      $('form').find('input').prop('disabled', true);
 
       // If we need to keep updating, set an interval. Once everything looks
-      // done, clear the interval.
+      // done, clear the interval and open up th3e search form.
       intervalID = setInterval(function () {
         if (!$("#searchCache:contains('working...')").length) {
           console.log('Nothing in progress, updates stopped.');
           clearInterval(intervalID);
           intervalID = null;
+          $('form').find('button').text('Search').prop('disabled', false);
+          $('form').find('input').prop('disabled', false);
         } else {
           fetchResults();
         }
@@ -127,7 +132,7 @@
       // don't accidentally spam it (and to give feedback that the search has
       // actually started.)
       $('form').submit(function () {
-        $(this).find(':button').prop('disabled', true);
+        $(this).find('button').text('Working...').prop('disabled', true);
       });
     });
   </script>
