@@ -77,5 +77,12 @@ def search():
         time.sleep(3)
         return redirect(url_for('search'))
 
-    search_index, _ = load_search_cache(batch_path)
+    retries = 3
+    while retries > 0:
+        search_index, _ = load_search_cache(batch_path)
+        if search_index:
+            break
+        time.sleep(0.1)
+        retries -= 1
+
     return render_template('search.html', total=doc_count, searches=search_index)

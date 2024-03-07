@@ -12,12 +12,17 @@ def load_search_cache(batch_path):
 
     search_index = []
     search_index_file = Path(batch_path) / 'cache' / 'searches' / 'search_index.json'
-    if search_index_file.exists():
-        with search_index_file.open() as f:
-            search_index = json.load(f)
-    else:
+    if not search_index_file.exists():
         search_index_file.parent.mkdir(parents=True, exist_ok=True)
         search_index_file.write_text('[]\n')
+    else:
+        try:
+            with search_index_file.open() as f:
+                search_index = json.load(f)
+        except json.decoder.JSONDecodeError:
+            log.error('Error loading search index: %s ' % search_index)
+            pass
+
     return search_index, search_index_file
 
 
