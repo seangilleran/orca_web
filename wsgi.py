@@ -8,6 +8,7 @@ from uuid import uuid4
 from celery import Celery
 from flask import (
     Flask,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -65,17 +66,11 @@ def filesize(value):
     return f"{value:.1f} TB"
 
 
-@app.route('/orca/search', methods=['GET', 'POST'])
-def search():
+@app.route('/orca/api/index')
+def api_get_index():
     """TODO: Description."""
     import time
     from orca.search import load_search_cache
-
-    if request.method == 'POST':
-        query_str = request.form['query']
-        do_search.delay(query_str)
-        time.sleep(3)
-        return redirect(url_for('search'))
 
     retries = 3
     while retries > 0:
@@ -84,5 +79,18 @@ def search():
             break
         time.sleep(0.1)
         retries -= 1
+    return jsonify(search_index)
 
-    return render_template('search.html', total=doc_count, searches=search_index)
+
+@app.route('/orca/search', methods=['GET', 'POST'])
+def search():
+    """TODO: Description."""
+    import time
+
+    if request.method == 'POST':
+        query_str = request.form['query']
+        do_search.delay(query_str)
+        time.sleep(3)
+        return redirect(url_for('search'))
+
+    return render_template('search.html', total=doc_count)
