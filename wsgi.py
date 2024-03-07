@@ -42,30 +42,6 @@ def do_search(self, query_str):
     print(f"Search complete: {query_str}")
 
 
-@app.template_filter('iso_datetime')
-def iso_datetime(value, format='%B %-d, %Y at %-I:%M %p'):
-    """TODO: Description."""
-    from datetime import datetime
-
-    if not value or value is None:
-        return ''
-    else:
-        return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f').strftime(format)
-
-
-@app.template_filter('filesize')
-def filesize(value):
-    """
-    TODO: Description.
-    https://web.archive.org/web/20111010015624/http://blogmag.net/blog/read/38/Print_human_readable_file_size
-    """
-    for unit in ('', 'K', 'M', 'G'):
-        if abs(value) < 1024.0:
-            return f"{value:3.1f} {unit}B"
-        value /= 1024.0
-    return f"{value:.1f} TB"
-
-
 @app.route('/orca/api/index')
 def api_get_index():
     """TODO: Description."""
@@ -90,7 +66,7 @@ def search():
     if request.method == 'POST':
         query_str = request.form['query']
         do_search.delay(query_str)
-        time.sleep(3)
+        time.sleep(2)
         return redirect(url_for('search'))
 
     return render_template('search.html', total=doc_count)
