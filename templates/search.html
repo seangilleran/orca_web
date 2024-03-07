@@ -19,6 +19,8 @@
   <br style="margin-bottom: 1rem;">
   <hr>
   <ul id="searchCache">
+    Updating search results...<br>
+    (Requires JavaScript)
   </ul>
   <hr>
   <footer>
@@ -34,13 +36,13 @@
   <script>
     function formatSize(bytes) {
       // https://web.archive.org/web/20111010015624/http://blogmag.net/blog/read/38/
-      let units = ['', 'K', 'M', 'G', 'T'];
+      let units = ['', 'k', 'm', 'g', 't'];
       let i = 0;
       while (bytes >= 1024 && i < units.length - 1) {
         bytes /= 1024;
         i++;
       }
-      return `${bytes.toFixed(1)} ${units[i]}B`;
+      return `${bytes.toFixed(1)} ${units[i]}b`;
     }
 
     function fetchResults() {
@@ -128,8 +130,6 @@
         $(this).find(':button').prop('disabled', true);
       });
     });
-
-    
   </script>
 
 </body>
