@@ -165,3 +165,6 @@ logs/
 bin/
 .env
 *.sock
+logs
+cache
+cache/
