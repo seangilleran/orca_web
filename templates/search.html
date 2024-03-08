@@ -35,107 +35,107 @@
 
   <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
   <script>
-    function formatSize(bytes) {
-      // https://web.archive.org/web/20111010015624/http://blogmag.net/blog/read/38/
-      let units = ['', 'k', 'm', 'g', 't'];
-      let i = 0;
-      while (bytes >= 1024 && i < units.length - 1) {
-        bytes /= 1024;
-        i++;
-      }
-      return `${bytes.toFixed(1)} ${units[i]}b`;
-    }
+function formatSize(bytes) {
+  // https://web.archive.org/web/20111010015624/http://blogmag.net/blog/read/38/
+  let units = ["", "k", "m", "g", "t"];
+  let i = 0;
+  while (bytes >= 1024 && i < units.length - 1) {
+    bytes /= 1024;
+    i++;
+  }
+  return `${bytes.toFixed(1)} ${units[i]}b`;
+}
 
-    function fetchResults() {
-      $.ajax({
-        url: '/orca/api/index',
-        type: 'GET',
-        success: function (data) {
-          $('#searchCache').empty();
+function fetchResults() {
+  $.ajax({
+    url: "/orca/api/index",
+    type: "GET",
+    success: function (data) {
+      $("#searchCache").empty();
 
-          // Reverse searches to get the most recent one first.
-          var searches = data.slice().reverse();
-          $.each(searches, function (search_index, search) {
+      // Reverse searches to get the most recent one first.
+      let searches = data.slice().reverse();
+      $.each(searches, function (search_index, search) {
 
-            // Create the main <li> element.
-            var searchLI = $('<li></li>');
-            if (search_index !== data.length - 1) {
-              searchLI.css('margin-bottom', '1rem');
+        // Create the main <li> element.
+        let searchLI = $("<li></li>");
+        if (search_index !== data.length - 1) {
+          searchLI.css("margin-bottom", "1rem");
+        }
+
+        // Add the query string; highlight.
+        searchLI.append($("<strong></strong>")
+          .text(search.query_str)
+          .css({
+            "font-family": "monospace",
+            "background-color": "yellow",
+            "border-radius": "2px",
+            "padding": "1px"
+          })
+        );
+
+        // Add the result count.
+        searchLI.append(` &mdash; ${search.results.count} results`);
+        if (!search.results.complete) {
+          searchLI.append(" so far (working...)");
+        }
+
+        // Create a sub-list for megadocs.
+        if (search.megadocs) {
+          let docsUL = $("<ul></ul>");
+          $.each(search.megadocs, function (doc_index, doc) {
+            let docLI = $("<li></li>").text("📄 ");
+
+            // Display completion % if not done...
+            if (!doc.complete) {
+              let pctDone = (doc.pages / search.results.count * 100.0).toFixed(1);
+              docLI.append(`${doc.filetype.toUpperCase()}: ${pctDone}% (working...)`);
+            } else {
+              // ...otherwise put up a link.
+              let docA = $("<a></a>")
+                .attr("href", doc.path)
+                .text(`Download .${doc.filetype.toUpperCase()}`)
+                .appendTo(docLI);
+              docLI.append(` (${formatSize(doc.size)})`);
             }
 
-            // Add the query string; highlight.
-            var queryStr = $('<strong></strong>').text(search['query_str'])
-              .css({
-                'font-family': 'monospace',
-                'background-color': 'yellow',
-                'border-radius': '2px',
-                'padding': '1px'
-              });
-            searchLI.append(queryStr);
-
-            // Add the result count.
-            searchLI.append('&nbsp;&mdash;&nbsp;' + search['results']['count'] + ' results');
-            if (!search['results']['complete']) {
-              searchLI.append(' so far (working...)');
-            }
-
-            // Create a sub-list for megadocs.
-            if (search['megadocs']) {
-              var docsUL = $('<ul></ul>');
-              $.each(search['megadocs'], function (doc_index, doc) {
-                var docLI = $('<li></li>').text('📄 ');
-
-                // Display completion % if not done...
-                if (!doc['complete']) {
-                  docLI.append(doc['filetype'].toUpperCase() + ': ' +
-                    ((doc['pages'] / search['results']['count'] * 100.0).toFixed(1)) +
-                    '% complete (working...)');
-                } else {
-                  // ...otherwise put up a link.
-                  var docA = $('<a></a>')
-                    .attr('href', doc['path'])
-                    .text('Download .' + doc['filetype'].toUpperCase())
-                    .appendTo(docLI);
-                  docLI.append(` (${formatSize(doc['size'])})`);
-                }
-
-                docsUL.append(docLI);
-              });
-              searchLI.append(docsUL);
-            }
-            $('#searchCache').append(searchLI);
+            docsUL.append(docLI);
           });
+          searchLI.append(docsUL);
         }
+        $("#searchCache").append(searchLI);
       });
     }
+  });
+}
 
-    $(document).ready(function () {
-      // Fetch results at least once to populate the list.
-      fetchResults()
-      $('form').find('button').text('Working...').prop('disabled', true);
-      $('form').find('input').prop('disabled', true);
+$(document).ready(function () {
+  // Fetch results at least once to populate the list.
+  fetchResults();
+  $("form").find("button").text("Working...").prop("disabled", true);
+  $("form").find("input").prop("disabled", true);
 
-      // If we need to keep updating, set an interval. Once everything looks
-      // done, clear the interval and open up th3e search form.
-      intervalID = setInterval(function () {
-        if (!$("#searchCache:contains('working...')").length) {
-          console.log('Nothing in progress, updates stopped.');
-          clearInterval(intervalID);
-          intervalID = null;
-          $('form').find('button').text('Search').prop('disabled', false);
-          $('form').find('input').prop('disabled', false);
-        } else {
-          fetchResults();
-        }
-      }, 500);
+  // If we need to keep updating, set an interval. Once everything looks
+  // done, clear the interval and open up th3e search form.
+  let intervalID = setInterval(function () {
+    if (!$("#searchCache:contains('working...')").length) {
+      console.log("Nothing in progress, updates stopped.");
+      clearInterval(intervalID);
+      intervalID = null;
+      $("form").find("button").text("Search").prop("disabled", false);
+      $("form").find("input").prop("disabled", false);
+    } else {
+      fetchResults();
+    }
+  }, 500);
 
-      // Disable the search button after it's clicked, just to make sure we
-      // don't accidentally spam it (and to give feedback that the search has
-      // actually started.)
-      $('form').submit(function () {
-        $(this).find('button').text('Working...').prop('disabled', true);
-      });
-    });
+  // Disable the search button after it's clicked, just to make sure we
+  // don't accidentally spam it (and to give feedback that the search has
+  // actually started.)
+  $("form").submit(function () {
+    $(this).find("button").text("Working...").prop("disabled", true);
+  });
+});
   </script>
 
 </body>
