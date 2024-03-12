@@ -17,6 +17,7 @@
       background-color: yellow;
       border-radius: 2px;
       padding: 1px;
+      margin-left: 1rem;
     }
   </style>
 </head>
@@ -38,9 +39,9 @@
     <hr>
   </header>
 
-  <ul id="searchCache">
+  <dl id="searchCache">
     Updating search results... (Requires JavaScript)
-  </ul>
+  </dl>
 
   <footer>
     <hr>
@@ -78,43 +79,42 @@
           let searches = data.slice().reverse();
           $.each(searches, function (search_index, search) {
 
-            // Create the main <li> element.
-            let searchLI = $("<li></li>");
+            // Create the main <dt> element.
+            let searchItem = $("<dt></dt>");
             if (search_index !== data.length - 1) {
-              searchLI.css("margin-bottom", "1rem");
+              searchItem.css("margin-bottom", "1rem");
             }
-            searchLI.append($("<span></span>").text(search.query_str).addClass("queryStr"));
+            searchItem.append($("<span></span>")
+              .text(search.query_str)
+              .addClass("queryStr")
+            );
 
             // Add the result count.
-            searchLI.append(` &mdash; ${search.results.count} results`);
+            searchItem.append(`&ensp;&mdash;&ensp;${search.results.count} results`);
             if (!search.results.complete) {
-              searchLI.append(" so far (working...)");
+              searchItem.append(" so far (working...)");
             }
 
             // Create a sub-list for megadocs.
-            if (search.megadocs) {
-              let docsUL = $("<ul></ul>");
-              $.each(search.megadocs, function (doc_index, doc) {
-                let docLI = $("<li></li>").text("📄 ");
+            $.each(search.megadocs, function (doc_index, doc) {
+              let docItem = $("<dd></dd>").text("📄 ");
 
-                // Display completion % if not done...
-                if (!doc.complete) {
-                  let pctDone = (doc.pages / search.results.count * 100.0).toFixed(1);
-                  docLI.append(`${doc.filetype.toUpperCase()}: ${pctDone}% (working...)`);
-                } else {
-                  // ...otherwise put up a link.
-                  let docA = $("<a></a>")
-                    .attr("href", doc.path)
-                    .text(`Download .${doc.filetype.toUpperCase()}`)
-                    .appendTo(docLI);
-                  docLI.append(` (${formatSize(doc.size)})`);
-                }
+              // Display completion % if not done...
+              if (!doc.complete) {
+                let pctDone = (doc.pages / search.results.count * 100.0).toFixed(1);
+                docItem.append(`${doc.filetype.toUpperCase()}: ${pctDone}% (working...)`);
+              } else {
+                // ...otherwise put up a link.
+                $("<a></a>")
+                  .attr("href", doc.path)
+                  .text(`Download .${doc.filetype.toUpperCase()}`)
+                  .appendTo(docItem);
+                docItem.append(` (${formatSize(doc.size)})`);
+              }
 
-                docsUL.append(docLI);
-              });
-              searchLI.append(docsUL);
-            }
-            $("#searchCache").append(searchLI);
+              searchItem.append(docItem);
+            });
+            $("#searchCache").append(searchItem);
           });
         }
       });
