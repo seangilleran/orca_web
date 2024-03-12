@@ -97,11 +97,10 @@
                 docItem.append(`${doc.filetype.toUpperCase()}: ${pctDone}% (working...)`);
               } else {
                 // ...otherwise put up a link.
-                $("<a></a>")
+                docItem.append($("<a></a>")
                   .attr("href", doc.path)
                   .text(`Download .${doc.filetype.toUpperCase()}`)
-                  .appendTo(docItem);
-                docItem.append(` (${formatSize(doc.size)})`);
+                ).append(` (${formatSize(doc.size)})`);
               }
 
               searchItem.append(docItem);
