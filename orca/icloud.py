@@ -58,9 +58,28 @@ def login(username='', password=''):
     return api
 
 
-def download_album(
-    dl_path, album_name, api, retry_max=3, retry_delay=60.0, skip_video=True
-):
+def album_sort(years, months, api):
+    """TODO: Description."""
+    from datetime import datetime
+
+    for i, photo in enumerate(api.photos.albums['Recents']):
+
+        is_match = False
+        year = photo.created.year
+        month = photo.created.month
+        if year in years and month in months:
+            is_match = True
+            album_name = datetime(year, month, 1).strftime('%B %Y')
+            album = api.photos.albums[album_name]
+            album.add(photo)
+
+        if is_match:
+            log.info('[%d] %s -> %s' % (i + 1, photo.filename, album_name))
+        else:
+            log.info('[%d] %s (no match)' % (i + 1, photo.filename))
+
+
+def download_by_album(dl_path, album_name, api, retry_max=3, retry_delay=60.0):
     """
     Download photos from an album and save them to the specified path.
 
@@ -83,34 +102,34 @@ def download_album(
     log.info('Downloading %d photos from album "%s"...' % (count, album_name))
     dl_path.mkdir(exist_ok=True, parents=True)
     for i, photo in enumerate(album):
+        count_str = '[%d/%d]' % (i + 1, count)
+
+        # Skip .MOV files.
+        if photo.filename.lower().endswith('.mov'):
+            log.info('%s: Video, skipping: %s' % (count_str, photo.filename))
+            continue
 
         # Build filename.
         index = f"{(i + 1):06}"
         timestamp = photo.created.strftime('%Y-%m-%d_%H-%M-%S')
         name = photo.filename
         img_file = dl_path / f"{index}_{timestamp}_{name}"
-
-        count_str = '[%d/%d]: %s' % (i + 1, count, img_file)
-        if i == 0 or i % 100 == 99 or i == count - 1:
-            log.info(count_str)
-        else:
-            log.debug(count_str)
-
         if img_file.exists():
-            log.warning('Already exists, skipping: %s' % img_file)
-            continue
-        if skip_video and img_file.suffix.lower() == '.mov':
-            log.warning('Video, skipping: %s' % img_file)
+            log.info('%s: Already exists, skipping: %s' % (count_str, img_file))
             continue
 
         # Download photo.
+        if i == 0 or i % 100 == 99 or i == count - 1:
+            log.info('%s: %s' % (count_str, img_file))
+        else:
+            log.debug('%s: %s' % (count_str, img_file))
         attempt = 0
         while attempt == 0 or attempt < retry_max:
             try:
                 download = photo.download()
                 break
             except PyiCloudAPIResponseException:
-                log.error('Failed with code 503.')
+                log.warning('Failed with code 503.')
                 if attempt < retry_max:
                     log.info(
                         'Retrying in %f seconds (%d/%d)...'
@@ -135,16 +154,9 @@ def download_album(
 
 
 if __name__ == '__main__':
-    import argparse
-    from dotenv import load_dotenv
-
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
     )
-
-    load_dotenv()
     api = login()
-    album_folder = Path('data/img/2023-06')
-    album_name = 'June 2023'
-    download_album(album_folder, album_name, api)
+    album_sort([2023], [7, 8, 9], api)

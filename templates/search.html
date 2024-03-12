@@ -80,17 +80,9 @@
           $.each(searches, function (search_index, search) {
 
             // Create the main <dt> element.
-            let searchItem = $("<dt></dt>");
-            if (search_index !== data.length - 1) {
-              searchItem.css("margin-bottom", "1rem");
-            }
-            searchItem.append($("<span></span>")
-              .text(search.query_str)
-              .addClass("queryStr")
-            );
-
-            // Add the result count.
-            searchItem.append(`&ensp;&mdash;&ensp;${search.results.count} results`);
+            let searchItem = $("<dt></dt>")
+              .append($("<span></span>").text(search.query_str).addClass("queryStr"))
+              .append(` &mdash; ${search.results.count} results`);
             if (!search.results.complete) {
               searchItem.append(" so far (working...)");
             }
@@ -114,6 +106,10 @@
 
               searchItem.append(docItem);
             });
+
+            if (search_index !== data.length - 1) {
+              searchItem.css("margin-bottom", "1rem");
+            }
             $("#searchCache").append(searchItem);
           });
         }
